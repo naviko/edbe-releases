@@ -1,0 +1,11 @@
+[package]
+name = "edbe"
+version = "0.1.1"
+edition = "2021"
+description = "edbe: an embedded database (documents, relationships, search, permissions) for Rust"
+license-file = "LICENSE"
+links = "edbe"
+build = "build.rs"
+include = ["src/**", "lib/**", "build.rs", "Cargo.toml", "LICENSE"]
+
+[dependencies]

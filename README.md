@@ -14,7 +14,7 @@ GRANT SELECT ON notes TO app WHERE owner = @principal.id;
 
 ## Why edbe
 
-- **One file, no server.** Nothing to install, configure or keep running beside your app.
+- **Embedded database.** Nothing to install, configure or keep running beside your app.
 - **One database instead of several.** Documents, a graph, full-text and vector search, and
   access control, where you would otherwise combine a database, a search engine and
   application code.
@@ -39,20 +39,113 @@ GRANT SELECT ON notes TO app WHERE owner = @principal.id;
 - Online backups, compaction, integrity check, a commit journal for replicas
 - A stable C API (`edbe.h`)
 
-## Downloads
+## Install
 
-Each [release](../../releases) has an archive per platform:
+Download the file for your language and platform from the [releases](../../releases).
+`<platform>` is `darwin_arm64` (macOS Apple silicon), `darwin_amd64` (macOS Intel),
+`linux_amd64` (Linux x64) or `linux_arm64` (Linux ARM64).
 
-| Platform | Archive |
-| --- | --- |
-| Linux x64 | `edbe-<version>-linux_amd64.tar.gz` |
-| Linux ARM64 | `edbe-<version>-linux_arm64.tar.gz` |
-| macOS Apple silicon | `edbe-<version>-darwin_arm64.tar.gz` |
-| macOS Intel | `edbe-<version>-darwin_amd64.tar.gz` |
+### Node.js / Bun
 
-Every archive holds the static library (`libedbe.a`), the header (`edbe.h`) and the license.
-The archive for the platform a release was built on also holds the shared library and the
-`edbe` command-line tool. Check downloads against `SHA256SUMS`.
+```sh
+npm install edbe-node-0.1.1-<platform>.tar.gz
+```
+
+```js
+const { Database } = require("edbe");
+const db = new Database("app.edbe");
+db.put("users:ada", { name: "Ada", city: "Oslo" });
+db.query("SELECT name FROM users WHERE city = ?", ["Oslo"]);   // [ { name: "Ada" } ]
+```
+
+### Python
+
+```sh
+pip install edbe-python-0.1.1-<platform>.tar.gz
+```
+
+```python
+from edbe import Database
+db = Database("app.edbe")
+db.put("users:ada", {"name": "Ada", "city": "Oslo"})
+list(db.query("SELECT name FROM users WHERE city = ?", "Oslo"))  # [{'name': 'Ada'}]
+```
+
+### .NET
+
+```sh
+tar xzf edbe-dotnet-0.1.1-<platform>.tar.gz
+dotnet add package Edbe --source edbe-dotnet-0.1.1-<platform>
+```
+
+```csharp
+using Edbe;
+using var db = new Database("app.edbe");
+db.Put("users:ada", new { name = "Ada", city = "Oslo" });
+db.Query("SELECT name FROM users WHERE city = ?", "Oslo");      // [ { "name": "Ada" } ]
+```
+
+### C / C++
+
+```sh
+tar xzf edbe-0.1.1-<platform>.tar.gz
+c++ -std=c++17 app.cpp -Iedbe-0.1.1-<platform> edbe-0.1.1-<platform>/libedbe.a -pthread -o app
+```
+
+```cpp
+#include "edbe.hpp"
+#include <iostream>
+
+int main() {
+    edbe::Database db("app.edbe");
+    db.put("users:ada", R"({"name":"Ada","city":"Oslo"})");
+    for (auto& row : db.query("SELECT name FROM users WHERE city = 'Oslo'"))
+        std::cout << row << "\n";                                       // {"name":"Ada"}
+}
+```
+
+### Go
+
+```sh
+go get github.com/naviko/edbe-releases/go@v0.1.1
+```
+
+```go
+import edbe "github.com/naviko/edbe-releases/go"
+
+db, err := edbe.Open("app.edbe")
+db.Put("users:ada", map[string]any{"name": "Ada", "city": "Oslo"})
+db.Query("SELECT name FROM users WHERE city = ?", "Oslo")   // [map[name:Ada]]
+```
+
+### Rust
+
+```toml
+[dependencies]
+edbe = { git = "https://github.com/naviko/edbe-releases", tag = "v0.1.1" }
+```
+
+```rust
+use edbe::Database;
+
+let db = Database::open("app.edbe")?;
+db.put("users:ada", r#"{"name":"Ada","city":"Oslo"}"#)?;
+db.query("SELECT name FROM users WHERE city = ?", &["Oslo".into()])?;   // [{"name":"Ada"}]
+```
+
+### Odin
+
+```sh
+tar xzf edbe-odin-0.1.1-<platform>.tar.gz    # the package folder edbe/: put it beside your code
+```
+
+```odin
+import edbe "edbe"
+
+db, _ := edbe.open("app.edbe")
+edbe.put(db, "users:ada", `{"name":"Ada","city":"Oslo"}`)
+edbe.query(db, "SELECT name FROM users WHERE city = ?", "Oslo")   // [{"name":"Ada"}]
+```
 
 ## License
 
